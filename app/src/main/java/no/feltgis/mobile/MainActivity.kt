@@ -3,7 +3,6 @@ package no.feltgis.mobile
 import android.app.Application
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import mobile.Mobile_
 import kotlin.properties.Delegates
 
 class MainActivity : AppCompatActivity() {
