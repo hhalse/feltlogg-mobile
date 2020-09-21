@@ -1,4 +1,4 @@
 rootProject.name = "MobileGoExample"
 include ':app'
-include ':MobileGo'
 include ':MobileGoLibrary'
+include ':gomobile'

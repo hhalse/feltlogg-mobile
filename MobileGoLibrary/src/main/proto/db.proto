@@ -1,0 +1,324 @@
+syntax = "proto3";
+
+package common;
+
+message PBFields {
+  repeated PBField fields = 1;
+}
+
+enum PBGeometryType{
+    UNKNOWN = 0;
+    POINT = 1;
+    POLYLINE = 2;
+    POLYGON = 3;
+}
+
+message PBField {
+   string name = 1;
+   enum Type {
+     STRING = 0;
+     INT = 1; // Variable encoding
+     FLOAT = 2;
+     BLOB = 3;
+   }
+   Type type = 2;
+   int32 fieldId = 3;
+   bool nullable = 4;
+   bool editable = 5;
+   string alias = 6;
+}
+
+message PBStyles {
+    int32 fieldId = 1;
+    repeated PBValue styles = 2;
+}
+
+message PBValues {
+    repeated PBValue values = 1;
+}
+
+message PBPair {
+    string key = 1;
+    string value = 2;
+}
+
+message PBHttpRequest {
+    string method = 1;
+    string url = 2;
+    repeated PBPair headers = 3;
+    bytes body = 4;
+    double timeout = 5;
+    int64 requestId = 6;
+}
+
+message PBHttpResponse {
+    int32 statusCode = 1;
+    bytes body = 2;
+    int64 requestId = 3;
+    repeated PBPair headers = 4;
+}
+
+//https://iric-gui-user-manual.readthedocs.io/en/latest/06/09_georef.html
+message PBGeoJpg{
+    double xPixelIncrement = 1;
+    double yPixelIncrement = 2;
+    double XTopLeft = 3;
+    double YTopLeft = 4;
+    bytes bytes = 5;
+    string comment = 6;
+    double lat = 7;
+    double lon = 8;
+}
+
+message PBGeoJpgs{
+    repeated PBGeoJpg values = 1;
+}
+
+message PBValue {
+    int32 fieldId = 1;
+    oneof value {
+        string stringVal = 2;
+        int64 intVal = 3;
+        double doubleVal = 4;
+        bytes blobVal = 5;
+    }
+}
+
+message PBExtent {
+    double Xmax = 1;
+    double Xmin = 2;
+    double Ymax = 3;
+    double Ymin = 4;
+    int64 Wkid = 5;
+}
+
+message PBSyncObjectDelimiter {
+    string GlobalId = 1;
+    int64 ObjectVersion = 2;
+}
+
+message PBAttributeQueryFilter {
+    string Key = 1;
+    oneof Value {
+        string stringVal = 2;
+        int32 int32Val = 3;
+    }
+}
+
+message PBSyncInputFilter {
+    PBExtent Extent = 1;
+    repeated PBAttributeQueryFilter AttributeQueryFilter = 2;
+}
+
+message PBSyncClientState {
+    PBSyncObjectDelimiter ServerDelimiter = 1;
+    int64 ClientDelimiterGeometryId = 2;
+    string ServerClientId = 3;
+}
+
+message PBGeometry {
+    int64 GeometryId = 1;
+    string GlobalId = 2;
+    bytes Geom = 3;
+    int32 StyleId = 4;
+}
+
+message PBFeatures {
+    repeated PBSlimFeature Features = 1;
+    PBFields Fields = 2;
+    PBGeometryType GeometryType = 3;
+}
+
+// Make sure to copy all new properties in Swift/Android - no constructor!
+message PBFeature {
+    PBGeometry Geometry = 1;
+    PBValues Values = 2;
+    PBFields Fields = 3;
+    PBGeometryType GeometryType = 4;
+}
+
+message PBSlimFeature {
+    PBGeometry Geometry = 1;
+    PBValues Values = 2;
+}
+
+message PBSyncInput {
+    string Collection = 1;
+    PBSyncObjectDelimiter PrevSyncLastObject = 2;
+    PBSyncInputFilter Filter = 3;
+    PBSyncInputFilter TempFilterOr = 4;
+    repeated PBSlimFeature Features = 5;
+    repeated string Deletes = 6;
+    string ClientId = 7;
+    uint32 BatchSize = 8;
+    bool MoreResults = 9;
+}
+
+message PBSyncOutput {
+    repeated PBSlimFeature Features = 1;
+    repeated string Deletes = 2;
+    PBSyncObjectDelimiter LastObject = 3;
+    string GlobalIdField = 4;
+    bytes InfoJson = 5;
+    bool MoreResults = 6;
+    string ClientId = 7;
+}
+
+message PBReportedMessages {
+    repeated PBReportedMessage Messages = 1;
+    string Failure = 2;
+}
+
+message PBReportedMessage {
+    float Volume = 3;
+    int32 AssortmentNum = 4;
+    string AssortmentName = 5;
+    string Created = 6;
+    string CreatedBy = 7;
+    string CreatedByName = 8;
+    string GeoLocationId = 9;
+    double CreatedD = 10;
+}
+
+message PBReportViewModel {
+
+    PBAssortmentMatch Produced = 1;
+
+    repeated PBPickupLocation PickupLocations = 2;
+
+    double UpdatedFromNetwork = 3;
+
+    repeated PBAssortmentVolumeTotal Totals = 4;
+
+    repeated PBReportedMessage Reported = 6;
+
+}
+
+message PBPickupLocation {
+    string Name = 1;
+    string GeoLocationId = 2;
+    PBAssortmentMatch FileReport = 3;
+}
+message PBAssortmentVolumes {
+    string Failure = 1;
+    repeated PBAssortmentVolume Volumes = 2;
+}
+
+message PBAssortmentVolumeTotal {
+    string AssName = 1;
+    string AssNum = 2;
+    float ForwardedVolume = 3;
+    float ProducedVolume = 4;
+}
+
+message PBAssortmentVolume {
+    string AssName = 1;
+    string AssNum = 2;
+    float Volume = 3;
+}
+
+// Existing (union) New = ToReport, New - Existing = Mismatch
+message PBAssortmentMatch {
+    PBAssortmentVolumes Existing = 1;
+    PBAssortmentVolumes New = 2;
+    PBAssortmentVolumes ToReport = 3;
+    PBAssortmentVolumes Mismatch = 4;
+    string Failure = 5;
+    string OrgNum = 6;
+    string OrderId = 7;
+    string PickupLocationID = 8;
+    string Filename = 9;
+    double Created = 10;
+    string SDEnv = 11;
+    double FlushedToServer = 12;
+    double UpdatedFromServer = 13;
+    string SummaryMessage = 14;
+    double FileModifiedOnMachinePc = 15;
+    bool   VolumeReportFlushedToServer = 16;
+    int64  BoxNumber = 17;
+    string GzippedRawDataFilePath = 18;
+    string Ssid = 19;
+    string CpuId = 20;
+    enum uploadStateEnum {
+        UPLOADING = 0;
+        UPLOADED = 1;
+        FAILED = 2;
+    }
+    uploadStateEnum uploadState = 21;
+}
+
+message PBAssortmentMatches {
+    repeated PBAssortmentMatch Matches = 1;
+}
+
+message PBMapViewModelLayer {
+    string Name = 1;
+    string Url = 2;
+    string Type = 3;
+}
+
+message PBMapAddFeatureType {
+    string Label = 1;
+    string Value = 2;
+    bytes ImagePng = 3;
+}
+
+message PBMapAddFeatureCollection {
+    string Collection = 1;
+    string DisplayName = 2;
+    repeated PBMapAddFeatureType types = 3;
+}
+
+message PBMapViewModel {
+    string Failure = 1;
+    repeated PBMapViewModelLayer BaseLayers = 2;
+    repeated PBMapViewModelLayer RasterLayers = 3;
+    repeated PBMapViewModelLayer FeatureLayers = 4;
+    PBExtent Extent = 5;
+    repeated PBMapAddFeatureCollection AddFeatures = 6;
+    map<string, string> NewFeatureDefaults = 7;
+}
+
+message PBFileUploadStateCallback {
+    string filename = 1;
+    string orgNum = 2;
+    string forwardedPickupLocationId = 3;
+    string orderId = 4;
+    enum uploadStateEnum {
+        UPLOADING = 0;
+        UPLOADED = 1;
+        FAILED = 2;
+    }
+    uploadStateEnum uploadState = 5;
+    double fileModifiedOnMachinePc = 6;
+    string message = 7;
+}
+
+message PBPrepareOffline {
+    string OrderId = 1;
+    int64 Progress = 2;
+    int64 Failures = 3;
+    int64 Total = 4;
+    PBExtent Extent = 5;
+    bool IsMpc = 6;
+}
+
+message PBPrepareOfflineList{
+    string Failure = 1;
+    repeated PBPrepareOffline Values = 2;
+}
+
+message PBSyncCollectionUpdate{
+    string collectionName = 1;
+    int64 numUpdates = 2;
+    int64 numDeletes = 3;
+}
+
+message PBCallback{
+    oneof value {
+        PBFileUploadStateCallback fileUploadState = 3;
+        PBPrepareOffline prepareOffline = 4;
+        PBHttpRequest httpRequest = 5;
+        PBSyncCollectionUpdate syncCollectionUpdate = 6;
+    }
+}

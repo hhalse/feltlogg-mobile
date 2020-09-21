@@ -11,14 +11,3 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
     }
 }
-class MobileGo(application: Application,
-               environment: String = "",
-               release: String = "", ) {
-    var mobileGo: Mobile_ by Delegates.notNull()
-    //var api: Api by Delegates.notNull()
-
-    init {
-    }
-
-}
-
